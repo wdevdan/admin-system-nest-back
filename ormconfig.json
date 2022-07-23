@@ -1,0 +1,19 @@
+{
+  "type": "postgres",
+  "host": "127.0.0.1",
+  "schema": "development",
+  "username": "postgres",
+  "password": "postgres",
+  "database": "postgres",
+  "port": 5432,
+  "migrationsTableName": "migration",
+  "autoLoadEntities": true,
+  "entities": [
+    null,
+    null
+  ],
+  "cli": {
+    "migrationsDir": "src/core/infra/migration"
+  },
+  "ssl": false
+}
