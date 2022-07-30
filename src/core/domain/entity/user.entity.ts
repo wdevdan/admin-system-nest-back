@@ -3,6 +3,7 @@ import { IsNotEmpty, Length } from 'class-validator';
 
 import { Device, UserData, Token } from '.';
 import { BaseEntity } from '../models/base';
+import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'user' })
 export class User extends BaseEntity {
@@ -15,8 +16,8 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', length: 256, nullable: true })
   login: string;
 
-  @Length(3, 50)
-  @Column({ type: 'varchar', length: 256, nullable: false })
+  @Exclude()
+  @Column({ type: 'varchar', length: 256, nullable: true })
   password: string;
 
 
@@ -37,6 +38,6 @@ export class User extends BaseEntity {
   }
 
   get DtoFields(): string[] {
-    return [...this.CreationFields, 'login', 'userData', 'device', 'token'];
+    return ['username', 'login', 'userData', 'device', 'token'];
   }
 }

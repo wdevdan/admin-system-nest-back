@@ -34,16 +34,18 @@ export abstract class BaseController<T extends BaseEntity | BaseShortEntity | Ba
     const errors = await this.validateData(entity);
     if (errors && errors.length) return errors;
 
-    return this.handlerWithData(this.IBaseService.create(entity));
+    const dto = BaseDto.transformDto(entity, this.model.DtoFields);
+    return this.handlerWithData(this.IBaseService.create(dto as T));
   }
 
   @Put()
   @UseGuards(SessionGuard)
   async update(@Body() entity: T | any): Promise<UpdateResult | Error> {
-    const errors = await this.validateData(entity);
+    const errors = await this.validateData(entity, true);
     if (errors && errors.length) return errors;
 
-    return this.handlerSimple(this.IBaseService.update(entity));
+    const dto = BaseDto.transformDto(entity, this.model.DtoFields);
+    return this.handlerSimple(this.IBaseService.update(dto as T));
   }
 
   @Delete(':uid')
@@ -58,7 +60,7 @@ export abstract class BaseController<T extends BaseEntity | BaseShortEntity | Ba
     return this.handlerSimple(this.IBaseService.restore(uid));
   }
 
-  private async handlerWithData(action: Promise<any>): Promise<any> {
+  protected async handlerWithData(action: Promise<any>): Promise<any> {
     return new Promise<T | Error>(async (resolver, reject) => {
       action.then((response) => {
         if (response.body) {
@@ -70,7 +72,7 @@ export abstract class BaseController<T extends BaseEntity | BaseShortEntity | Ba
     });
   }
 
-  private async handlerSimple(action: Promise<any>): Promise<any> {
+  protected async handlerSimple(action: Promise<any>): Promise<any> {
     return new Promise<any>(async (resolver, reject) => {
       action.then((response) => {
         if (response.body) {
@@ -83,15 +85,13 @@ export abstract class BaseController<T extends BaseEntity | BaseShortEntity | Ba
     });
   }
 
-  private async validateData(entity: any): Promise<any[] | any> {
+  protected async validateData(entity: any, update?: boolean): Promise<any[] | any> {
     return new Promise<T | Error>(async (resolver, reject) => {
-      const needValidate =
-      this.model.CreationFields && this.model.CreationFields.length > 0;
-
+      let fields = update ? this.model.DtoFields : this.model.CreationFields;
       let response = [] as any;
 
-      if (needValidate) this.model.CreationFields.forEach
-      ((field) => this.model[field] = entity[field]);
+      if (fields && fields.length > 0)
+      fields.forEach((f: string) => this.model[f] = entity[f]);
       else resolver(response);
 
       const errors = await ModelValidator(this.model);
